@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Status</title>
+    <style>
+        #status {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        .running {
+            color: green !important;  /* 우선순위 강제 적용 */
+        }
+        .down {
+            color: red !important;  /* 우선순위 강제 적용 */
+        }
+    </style>
+</head>
+<body>
+    <h1>Hello, VMware TAS!</h1>
+    <h2>Application Status</h2>
+    <div id="status">Checking...</div>
+    <div id="time">Time: Loading...</div>
+    <script>
+        async function checkHealth() {
+            try {
+                const response = await fetch('/health');
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+                const data = await response.json();
+                const statusElement = document.getElementById('status');
+                const timeElement = document.getElementById('time');
+
+                // Application Status 표시
+                if (data.status === 'UP') {
+                    statusElement.textContent = data.application_status;
+                    statusElement.className = 'running'; // Apply green color
+                } else {
+                    statusElement.textContent = 'Application is down';
+                    statusElement.className = 'down'; // Apply red color
+                }
+
+                // 현재 시간 표시
+                timeElement.textContent = 'Time: ' + data.time;
+            } catch (error) {
+                const statusElement = document.getElementById('status');
+                const timeElement = document.getElementById('time');
+                statusElement.textContent = 'Application is down';
+                statusElement.className = 'down'; // Apply red color
+                timeElement.textContent = 'Time: Error fetching time';
+            }
+        }
+
+        // Check health every 30 seconds
+        setInterval(checkHealth, 30000);
+        checkHealth(); // Initial call
+    </script>
+</body>
+</html>
+
